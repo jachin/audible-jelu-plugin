@@ -1,6 +1,6 @@
 # Audible to Jelu Importer
 
-A browser extension that seamlessly imports audiobooks from Audible to your self-hosted [Jelu](https://github.com/bayang/jelu) library.
+A browser extension that imports audiobooks from Audible to your self-hosted [Jelu](https://github.com/bayang/jelu) library.
 
 ## Features
 
@@ -14,7 +14,7 @@ A browser extension that seamlessly imports audiobooks from Audible to your self
 
 1. **Clone the repository**:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/jachin/audible-jelu-plugin
    cd audible-jelu-plugin
    ```
 
@@ -48,5 +48,4 @@ This project is licensed under the MIT License - see the [LICENSE](LICENSE) file
 ## Acknowledgments
 
 - [Jelu](https://github.com/bayang/jelu) - The amazing self-hosted reading tracker
-- [Audible](https://audible.com) - For the rich audiobook metadata
-- The open source community for browser extension best practices
+- [Audible](https://audible.com) - For the audiobook metadata
