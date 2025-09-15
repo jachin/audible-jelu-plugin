@@ -469,9 +469,6 @@ document.getElementById("importBtn").addEventListener("click", async () => {
       // Update button to "View in Jelu" since we now have the book
       document.getElementById("importBtn").textContent = "View in Jelu";
       document.getElementById("importBtn").className = "open-btn";
-
-      // Show the "Open in Jelu" button
-      document.getElementById("openInJeluBtn").classList.remove("hidden");
     } catch (error) {
       console.error("Import error:", error);
       showStatus("Import failed: " + error.message, "error");
