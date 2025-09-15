@@ -1,0 +1,198 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8" />
+        <style>
+            body {
+                width: 350px;
+                padding: 15px;
+                font-family: Arial, sans-serif;
+                font-size: 14px;
+            }
+
+            .section {
+                margin-bottom: 15px;
+                padding: 10px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+            }
+
+            .section h4 {
+                margin: 0 0 10px 0;
+                color: #333;
+            }
+
+            .book-info {
+                background-color: #f9f9f9;
+            }
+
+            .book-title {
+                font-weight: bold;
+                font-size: 14px;
+                margin-bottom: 5px;
+                color: #333;
+            }
+
+            .book-detail {
+                font-size: 12px;
+                margin-bottom: 3px;
+                color: #666;
+            }
+
+            .jelu-config {
+                background-color: #f0f8ff;
+            }
+
+            input[type="text"],
+            input[type="password"],
+            input[type="url"] {
+                width: 100%;
+                padding: 5px;
+                margin: 3px 0;
+                border: 1px solid #ccc;
+                border-radius: 3px;
+                box-sizing: border-box;
+            }
+
+            button {
+                width: 100%;
+                padding: 8px;
+                margin: 5px 0;
+                border: none;
+                border-radius: 3px;
+                cursor: pointer;
+                font-size: 12px;
+            }
+
+            .scrape-btn {
+                background-color: #ff9500;
+                color: white;
+            }
+
+            .login-btn {
+                background-color: #007cba;
+                color: white;
+            }
+
+            .import-btn {
+                background-color: #28a745;
+                color: white;
+            }
+
+            .import-btn:disabled {
+                background-color: #ccc;
+                cursor: not-allowed;
+            }
+
+            .open-btn {
+                background-color: #17a2b8;
+                color: white;
+            }
+
+            .status {
+                font-size: 11px;
+                padding: 5px;
+                border-radius: 3px;
+                margin: 5px 0;
+            }
+
+            .status.success {
+                background-color: #d4edda;
+                color: #155724;
+            }
+
+            .status.error {
+                background-color: #f8d7da;
+                color: #721c24;
+            }
+
+            .status.info {
+                background-color: #d1ecf1;
+                color: #0c5460;
+            }
+
+            .no-book {
+                text-align: center;
+                color: #666;
+                font-size: 12px;
+            }
+
+            .connected {
+                color: #28a745;
+                font-weight: bold;
+                font-size: 11px;
+            }
+
+            .disconnected {
+                color: #dc3545;
+                font-weight: bold;
+                font-size: 11px;
+            }
+
+            .hidden {
+                display: none;
+            }
+        </style>
+    </head>
+    <body>
+        <h3>Audible to Jelu</h3>
+
+        <!-- Jelu Configuration Section -->
+        <div class="section jelu-config">
+            <h4>Jelu Configuration</h4>
+            <div id="jeluStatus" class="disconnected">Not connected</div>
+
+            <div id="loginForm">
+                <input
+                    type="url"
+                    id="jeluUrl"
+                    placeholder="Jelu URL (e.g., https://books.rupe.us)"
+                    value="https://books.rupe.us"
+                />
+                <input type="text" id="username" placeholder="Username" />
+                <input type="password" id="password" placeholder="Password" />
+                <button class="login-btn" id="loginBtn">Connect to Jelu</button>
+            </div>
+
+            <div id="loggedInInfo" class="hidden">
+                <div>Connected to: <span id="connectedUrl"></span></div>
+                <button class="login-btn" id="logoutBtn">Disconnect</button>
+            </div>
+        </div>
+
+        <!-- Book Data Section -->
+        <div class="section">
+            <h4>Book Data</h4>
+            <div id="bookData" class="hidden book-info">
+                <div class="book-title" id="bookTitle"></div>
+                <div class="book-detail" id="bookAuthor"></div>
+                <div class="book-detail" id="bookNarrator"></div>
+                <div class="book-detail" id="bookSeries"></div>
+                <div class="book-detail" id="bookPublisher"></div>
+            </div>
+
+            <div id="noBook" class="no-book">
+                <p>Navigate to an Audible book page and reopen this popup.</p>
+            </div>
+
+            <button class="scrape-btn hidden" id="scrapeBtn">
+                Retry Scraping
+            </button>
+        </div>
+
+        <!-- Import Section -->
+        <div class="section">
+            <h4>Import to Jelu</h4>
+            <button class="import-btn" id="importBtn" disabled>
+                Import Book to Jelu
+            </button>
+            <button class="open-btn hidden" id="openInJeluBtn">
+                Open in Jelu
+            </button>
+        </div>
+
+        <div id="status"></div>
+
+        <script src="popup.js"></script>
+    </body>
+</html>
