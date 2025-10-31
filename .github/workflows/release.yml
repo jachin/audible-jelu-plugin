@@ -1,0 +1,66 @@
+name: Build and Release
+
+on:
+  push:
+    tags:
+      - 'v*.*.*'
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Get version from package.json
+        id: package-version
+        run: echo "version=$(node -p "require('./package.json').version")" >> $GITHUB_OUTPUT
+
+      - name: Build Firefox extension
+        run: |
+          mkdir -p dist
+          npx web-ext build --overwrite-dest --artifacts-dir dist --filename audible-jelu-plugin-firefox-v${{ steps.package-version.outputs.version }}.zip
+
+      - name: Build Chrome extension
+        run: |
+          cd dist
+          zip -r audible-jelu-plugin-chrome-v${{ steps.package-version.outputs.version }}.zip ../manifest.json ../content.js ../popup.html ../popup.js ../LICENSE ../README.md
+
+      - name: Create Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            dist/audible-jelu-plugin-firefox-v${{ steps.package-version.outputs.version }}.zip
+            dist/audible-jelu-plugin-chrome-v${{ steps.package-version.outputs.version }}.zip
+          body: |
+            ## Installation Instructions
+
+            ### Firefox
+            1. Download `audible-jelu-plugin-firefox-v${{ steps.package-version.outputs.version }}.zip`
+            2. Open Firefox and navigate to `about:addons`
+            3. Click the gear icon ⚙️ and select "Install Add-on From File..."
+            4. Select the downloaded `.zip` file
+
+            **Note**: You may need to enable unsigned extensions in Firefox (see README for details).
+
+            ### Chrome/Edge
+            1. Download `audible-jelu-plugin-chrome-v${{ steps.package-version.outputs.version }}.zip`
+            2. Extract the zip file to a permanent location
+            3. Open Chrome/Edge and navigate to `chrome://extensions/` (or `edge://extensions/`)
+            4. Enable "Developer mode"
+            5. Click "Load unpacked" and select the extracted folder
+
+            See the [README](https://github.com/jachin/audible-jelu-plugin#installation) for detailed installation instructions.
+          draft: false
+          prerelease: false
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
