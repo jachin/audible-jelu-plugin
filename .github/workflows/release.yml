@@ -31,7 +31,7 @@ jobs:
       - name: Build Firefox extension
         run: |
           mkdir -p dist
-          npx web-ext build --overwrite-dest --artifacts-dir dist --filename audible-jelu-plugin-firefox-v${{ steps.package-version.outputs.version }}.zip
+          npx web-ext build --overwrite-dest --ignore-files package.json package-lock.json devbox.json devbox.lock .gitignore .web-ext-ignore README.md .github node_modules --artifacts-dir dist --filename audible-jelu-plugin-firefox-v${{ steps.package-version.outputs.version }}.zip
 
       - name: Build Chrome extension
         run: |

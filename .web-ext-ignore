@@ -1,0 +1,24 @@
+# Development files
+package.json
+package-lock.json
+devbox.json
+devbox.lock
+.gitignore
+.web-ext-ignore
+
+# Directories
+node_modules/
+.devbox/
+.git/
+.github/
+dist/
+web-ext-artifacts/
+
+# Documentation (not needed in extension)
+README.md
+
+# Build artifacts
+*.zip
+*.xpi
+*.crx
+*.pem
