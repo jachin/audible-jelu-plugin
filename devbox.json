@@ -1,0 +1,21 @@
+{
+  "$schema": "https://raw.githubusercontent.com/jetify-com/devbox/0.16.0/.schema/devbox.schema.json",
+  "packages": ["nodejs@latest"],
+  "shell": {
+    "init_hook": ["echo 'Welcome to devbox!' > /dev/null"],
+    "scripts": {
+      "test": ["echo \"Error: no test specified\" && exit 1"],
+      "build": ["npx web-ext build --overwrite-dest"],
+      "build:firefox": [
+        "VERSION=$(node -p \"require('./package.json').version\") && npx web-ext build --overwrite-dest --filename audible-jelu-plugin-firefox-v${VERSION}.zip"
+      ],
+      "build:chrome": [
+        "VERSION=$(node -p \"require('./package.json').version\") && mkdir -p dist && zip -r dist/audible-jelu-plugin-chrome-v${VERSION}.zip manifest.json content.js popup.html popup.js LICENSE README.md"
+      ],
+      "build:all": [
+        "VERSION=$(node -p \"require('./package.json').version\") && mkdir -p dist && npx web-ext build --overwrite-dest --artifacts-dir dist --filename audible-jelu-plugin-firefox-v${VERSION}.zip && cd dist && zip -r audible-jelu-plugin-chrome-v${VERSION}.zip ../manifest.json ../content.js ../popup.html ../popup.js ../LICENSE ../README.md"
+      ],
+      "lint": ["npx web-ext lint"]
+    }
+  }
+}
