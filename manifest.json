@@ -27,12 +27,5 @@
     }
   ],
 
-  "permissions": [
-    "activeTab",
-    "storage",
-    "*://*.audible.com/*",
-    "*://*.audible.ca/*",
-    "*://*.audible.co.uk/*",
-    "https://books.rupe.us/*"
-  ]
+  "permissions": ["storage", "<all_urls>"]
 }
