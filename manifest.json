@@ -1,32 +1,38 @@
 {
-	"manifest_version": 2,
-	"name": "Audible to Jelu Importer",
-	"version": "1.0",
-	"description": "Import Audible book data to your self-hosted Jelu instance",
+  "manifest_version": 2,
+  "name": "Audible to Jelu Importer",
+  "version": "1.0",
+  "description": "Import Audible book data to your self-hosted Jelu instance",
 
-	"browser_action": {
-		"default_popup": "popup.html",
-		"default_title": "Audible to Jelu"
-	},
+  "browser_specific_settings": {
+    "gecko": {
+      "id": "audible-jelu-importer@jachin.github.io"
+    }
+  },
 
-	"content_scripts": [
-		{
-			"matches": [
-				"*://*.audible.com/*",
-				"*://*.audible.ca/*",
-				"*://*.audible.co.uk/*"
-			],
-			"js": ["content.js"],
-			"run_at": "document_end"
-		}
-	],
+  "browser_action": {
+    "default_popup": "popup.html",
+    "default_title": "Audible to Jelu"
+  },
 
-	"permissions": [
-		"activeTab",
-		"storage",
-		"*://*.audible.com/*",
-		"*://*.audible.ca/*",
-		"*://*.audible.co.uk/*",
-		"https://books.rupe.us/*"
-	]
+  "content_scripts": [
+    {
+      "matches": [
+        "*://*.audible.com/*",
+        "*://*.audible.ca/*",
+        "*://*.audible.co.uk/*"
+      ],
+      "js": ["content.js"],
+      "run_at": "document_end"
+    }
+  ],
+
+  "permissions": [
+    "activeTab",
+    "storage",
+    "*://*.audible.com/*",
+    "*://*.audible.ca/*",
+    "*://*.audible.co.uk/*",
+    "https://books.rupe.us/*"
+  ]
 }
