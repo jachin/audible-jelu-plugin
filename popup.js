@@ -20,9 +20,13 @@ class JeluAPI {
         "X-Auth-Token": this.token,
         "Content-Type": "application/json",
       };
-    } else {
+    } else if (this.authHeader) {
       return {
         Authorization: this.authHeader,
+        "Content-Type": "application/json",
+      };
+    } else {
+      return {
         "Content-Type": "application/json",
       };
     }
@@ -31,7 +35,7 @@ class JeluAPI {
   async getToken() {
     try {
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 10000);
 
       const response = await fetch(`${this.baseUrl}/api/v1/token`, {
         method: "GET",
@@ -40,6 +44,7 @@ class JeluAPI {
       });
 
       clearTimeout(timeoutId);
+
       if (response.ok) {
         const data = await response.json();
         this.token = data.token;
@@ -54,33 +59,28 @@ class JeluAPI {
 
   async testConnection() {
     try {
-      // If we have a token, test with that first
+      // If we have a token, do a simple format check instead of HTTP validation
       if (this.token) {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
-
-        const response = await fetch(`${this.baseUrl}/api/v1/users/me`, {
-          method: "GET",
-          headers: this.getHeaders(),
-          signal: controller.signal,
-        });
-
-        clearTimeout(timeoutId);
-        if (response.ok) return true;
-
-        // Token might be expired, clear it
-        this.token = null;
+        // Simple token format validation (UUID-like format)
+        const tokenPattern =
+          /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+        if (!tokenPattern.test(this.token)) {
+          this.token = null;
+          return false;
+        } else {
+          // Assume the token is good - we'll find out if it's expired when we actually use it
+          return true;
+        }
       }
 
       // Only try Basic auth if we have a password
       if (!this.password) {
-        console.log("No password available for Basic auth");
         return false;
       }
 
       // Try with Basic auth and get a new token
       const controller = new AbortController();
-      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+      const timeoutId = setTimeout(() => controller.abort(), 8000);
 
       const response = await fetch(
         `${this.baseUrl}/api/v1/books?page=0&size=1`,
@@ -160,7 +160,10 @@ class JeluAPI {
         body: JSON.stringify(userBook),
       });
 
-      if (!response.ok) {
+      if (response.status === 401) {
+        await this.handleAuthFailure();
+        throw new Error("Authentication expired - please login again");
+      } else if (!response.ok) {
         const errorText = await response.text();
         throw new Error(`HTTP ${response.status}: ${errorText}`);
       }
@@ -229,16 +232,27 @@ class JeluAPI {
           );
           return existingBook || null;
         }
+        return null;
+      } else if (response.status === 401) {
+        await this.handleAuthFailure();
+        throw new Error("Authentication expired - please login again");
+      } else {
+        return null;
       }
-      return null;
     } catch (error) {
       console.error("Error checking for existing book:", error);
       return null;
     }
   }
 
+  async handleAuthFailure() {
+    // Clear the invalid token and reset UI state
+    this.token = null;
+    await browser.storage.local.remove(["jeluToken"]);
+    updateJeluStatus(false);
+  }
+
   stripHtml(html) {
-    // Use DOMParser for safer HTML parsing
     const parser = new DOMParser();
     const doc = parser.parseFromString(html, "text/html");
     return doc.body.textContent || "";
@@ -500,7 +514,14 @@ document.getElementById("importBtn").addEventListener("click", async () => {
       document.getElementById("importBtn").className = "open-btn";
     } catch (error) {
       console.error("Import error:", error);
-      showStatus(`Import failed: ${error.message}`, "error");
+      if (error.message.includes("Authentication expired")) {
+        showStatus(
+          "Session expired - please login again to import books",
+          "warning",
+        );
+      } else {
+        showStatus(`Import failed: ${error.message}`, "error");
+      }
     }
   }
 });
@@ -519,6 +540,19 @@ document.getElementById("openInJeluBtn").addEventListener("click", () => {
 
 // Auto-scrape and load saved credentials on popup open
 document.addEventListener("DOMContentLoaded", async () => {
+  // Debounce function to limit storage writes
+  function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+
   // Load saved Jelu URL, username, and token
   try {
     const saved = await browser.storage.local.get([
@@ -533,39 +567,57 @@ document.addEventListener("DOMContentLoaded", async () => {
       document.getElementById("username").value = saved.jeluUsername;
     }
 
+    // Auto-save URL and username as user types (debounced)
+    const saveUrl = debounce(async (url) => {
+      try {
+        await browser.storage.local.set({ jeluUrl: url });
+      } catch (error) {
+        console.log("Failed to save URL:", error);
+      }
+    }, 500);
+
+    const saveUsername = debounce(async (username) => {
+      try {
+        await browser.storage.local.set({ jeluUsername: username });
+      } catch (error) {
+        console.log("Failed to save username:", error);
+      }
+    }, 500);
+
+    document.getElementById("jeluUrl").addEventListener("input", (e) => {
+      const url = e.target.value.trim();
+      if (url !== saved.jeluUrl) {
+        saveUrl(url);
+      }
+    });
+
+    document.getElementById("username").addEventListener("input", (e) => {
+      const username = e.target.value.trim();
+      if (username !== saved.jeluUsername) {
+        saveUsername(username);
+      }
+    });
+
     // Try to auto-login with saved token
     if (saved.jeluUrl && saved.jeluUsername && saved.jeluToken) {
-      showStatus("Checking saved session...", "info");
       const jelu = new JeluAPI(
         saved.jeluUrl,
         saved.jeluUsername,
         "",
         saved.jeluToken,
       );
-      try {
-        const connected = await jelu.testConnection();
 
-        if (connected) {
-          jeluCredentials = jelu;
-          updateJeluStatus(true, saved.jeluUrl);
-          showStatus("Automatically connected using saved session!");
-        } else {
-          // Token expired or invalid, clear it and show login form
-          await browser.storage.local.remove(["jeluToken"]);
-          updateJeluStatus(false);
-          showStatus(
-            "Saved session expired. Please enter your password to login again.",
-            "warning",
-          );
-        }
-      } catch (error) {
-        // Clear expired token and show error
+      const connected = await jelu.testConnection();
+
+      if (connected && jelu.token) {
+        jeluCredentials = jelu;
+        updateJeluStatus(true, saved.jeluUrl);
+        showStatus("Automatically connected using saved session!");
+      } else {
+        // Token format is bad or was cleared, show login form
         await browser.storage.local.remove(["jeluToken"]);
         updateJeluStatus(false);
-        showStatus(
-          `Session check failed: ${error.message || "Connection error"}. Please login again.`,
-          "error",
-        );
+        showStatus("Saved session expired. Please login again.", "warning");
       }
     }
   } catch (error) {
