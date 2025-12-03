@@ -30,11 +30,16 @@ class JeluAPI {
 
   async getToken() {
     try {
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
+
       const response = await fetch(`${this.baseUrl}/api/v1/token`, {
         method: "GET",
         headers: this.getHeaders(),
+        signal: controller.signal,
       });
 
+      clearTimeout(timeoutId);
       if (response.ok) {
         const data = await response.json();
         this.token = data.token;
@@ -51,24 +56,42 @@ class JeluAPI {
     try {
       // If we have a token, test with that first
       if (this.token) {
+        const controller = new AbortController();
+        const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
         const response = await fetch(`${this.baseUrl}/api/v1/users/me`, {
           method: "GET",
           headers: this.getHeaders(),
+          signal: controller.signal,
         });
+
+        clearTimeout(timeoutId);
         if (response.ok) return true;
 
         // Token might be expired, clear it
         this.token = null;
       }
 
+      // Only try Basic auth if we have a password
+      if (!this.password) {
+        console.log("No password available for Basic auth");
+        return false;
+      }
+
       // Try with Basic auth and get a new token
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 8000); // 8 second timeout
+
       const response = await fetch(
         `${this.baseUrl}/api/v1/books?page=0&size=1`,
         {
           method: "GET",
           headers: this.getHeaders(),
+          signal: controller.signal,
         },
       );
+
+      clearTimeout(timeoutId);
 
       if (response.ok) {
         // Get and store token for future use
@@ -79,7 +102,12 @@ class JeluAPI {
       return false;
     } catch (error) {
       console.error("Connection test failed:", error);
-      return false;
+      if (error.name === "AbortError") {
+        throw new Error(
+          "Connection timeout - please check your Jelu URL and network connection",
+        );
+      }
+      throw error;
     }
   }
 
@@ -514,16 +542,30 @@ document.addEventListener("DOMContentLoaded", async () => {
         "",
         saved.jeluToken,
       );
-      const connected = await jelu.testConnection();
+      try {
+        const connected = await jelu.testConnection();
 
-      if (connected) {
-        jeluCredentials = jelu;
-        updateJeluStatus(true, saved.jeluUrl);
-        showStatus("Automatically connected using saved session!");
-      } else {
-        // Token expired or invalid, clear it
+        if (connected) {
+          jeluCredentials = jelu;
+          updateJeluStatus(true, saved.jeluUrl);
+          showStatus("Automatically connected using saved session!");
+        } else {
+          // Token expired or invalid, clear it and show login form
+          await browser.storage.local.remove(["jeluToken"]);
+          updateJeluStatus(false);
+          showStatus(
+            "Saved session expired. Please enter your password to login again.",
+            "warning",
+          );
+        }
+      } catch (error) {
+        // Clear expired token and show error
         await browser.storage.local.remove(["jeluToken"]);
-        showStatus("Saved session expired. Please login again.", "info");
+        updateJeluStatus(false);
+        showStatus(
+          `Session check failed: ${error.message || "Connection error"}. Please login again.`,
+          "error",
+        );
       }
     }
   } catch (error) {
