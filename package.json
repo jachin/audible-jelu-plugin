@@ -1,6 +1,6 @@
 {
   "name": "audible-jelu-plugin",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "A browser extension that imports audiobooks from Audible to your self-hosted [Jelu](https://github.com/bayang/jelu) library.",
   "main": "content.js",
   "scripts": {

@@ -16,15 +16,34 @@ Download the latest release package for your browser from the [Releases](https:/
 
 #### Firefox
 
+There are two ways to install the extension in Firefox. Option A works in any version
+but the extension won't survive a browser restart. Option B is permanent but requires a
+specific Firefox build.
+
+**Option A — Temporary install (any Firefox version)**
+
+The extension will be removed when Firefox restarts.
+
 1. **Download** `audible-jelu-plugin-firefox-v*.zip` from the releases page
-2. **Open Firefox** and navigate to `about:addons`
-3. **Click the gear icon** ⚙️ and select "Install Add-on From File..."
-4. **Select** the downloaded `.zip` file
-5. **Note**: Firefox may show a warning that the extension is not signed. You'll need to:
-   - Navigate to `about:config`
-   - Search for `xpinstall.signatures.required`
-   - Set it to `false` (this allows unsigned extensions)
-   - Or use [Firefox Developer Edition](https://www.mozilla.org/en-US/firefox/developer/) or [Firefox Nightly](https://www.mozilla.org/en-US/firefox/channel/desktop/#nightly) which allow unsigned extensions by default
+2. **Open Firefox** and navigate to `about:debugging`
+3. **Click "This Firefox"**
+4. **Click "Load Temporary Add-on..."**
+5. **Select** the downloaded `.zip` file directly — no need to extract it
+
+**Option B — Permanent install (Developer Edition, Nightly, or ESR only)**
+
+> **⚠️ This does not work in regular release or beta Firefox.** The
+> `xpinstall.signatures.required` preference is locked in those builds and cannot be
+> changed. You need [Firefox Developer Edition](https://www.mozilla.org/en-US/firefox/developer/),
+> [Firefox Nightly](https://www.mozilla.org/en-US/firefox/channel/desktop/#nightly),
+> or [Firefox ESR](https://www.mozilla.org/en-US/firefox/enterprise/).
+
+1. **Install** Developer Edition, Nightly, or ESR (links above)
+2. **Navigate to `about:config`**, search for `xpinstall.signatures.required`, and set
+   it to `false`
+3. **Download** `audible-jelu-plugin-firefox-v*.zip` from the releases page
+4. **Open `about:addons`**, click the gear icon ⚙️, select "Install Add-on From File...",
+   and select the downloaded `.zip` file
 
 #### Chrome/Edge
 

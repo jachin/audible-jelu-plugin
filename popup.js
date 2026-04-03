@@ -432,6 +432,28 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
     return;
   }
 
+  // Request host permission for the user's Jelu server.
+  // Must be called in a user-gesture handler (click) for the browser to allow it.
+  let jeluOrigin;
+  try {
+    jeluOrigin = new URL(url).origin + "/*";
+  } catch (e) {
+    showStatus("Please enter a valid Jelu URL.", "error");
+    return;
+  }
+
+  const granted = await browser.permissions.request({
+    origins: [jeluOrigin],
+  });
+
+  if (!granted) {
+    showStatus(
+      "Host permission is required to connect to your Jelu server.",
+      "error",
+    );
+    return;
+  }
+
   showStatus("Connecting to Jelu...", "info");
 
   try {

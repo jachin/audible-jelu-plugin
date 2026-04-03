@@ -30,5 +30,11 @@
     }
   ],
 
-  "permissions": ["storage", "<all_urls>"]
+  "permissions": [
+    "storage",
+    "*://*.audible.com/*",
+    "*://*.audible.ca/*",
+    "*://*.audible.co.uk/*"
+  ],
+  "optional_permissions": ["<all_urls>"]
 }
