@@ -171,7 +171,7 @@ class JeluAPI {
       const result = await response.json();
 
       // Try to upload cover image if available and book was created
-      if (bookData.coverImage && result.book && result.book.id) {
+      if (bookData.coverImage && result.book?.id) {
         await this.uploadCoverImage(result.book.id, bookData.coverImage);
       }
 
@@ -437,7 +437,7 @@ document.getElementById("loginBtn").addEventListener("click", async () => {
   let jeluOrigin;
   try {
     jeluOrigin = new URL(url).origin + "/*";
-  } catch (e) {
+  } catch {
     showStatus("Please enter a valid Jelu URL.", "error");
     return;
   }
