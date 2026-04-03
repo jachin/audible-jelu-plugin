@@ -11,8 +11,8 @@
     "url": "git+https://github.com/jachin/audible-jelu-plugin.git"
   },
   "keywords": [],
-  "author": "",
-  "license": "ISC",
+  "author": "Jachin Rupe",
+  "license": "MIT",
   "type": "commonjs",
   "bugs": {
     "url": "https://github.com/jachin/audible-jelu-plugin/issues"
